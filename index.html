@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Interactive PCK Development Cases: Henry & June</title>
+    <title>Interactive PCK development cases: Henry & June</title>
     <style>
         * {
             margin: 0;
@@ -417,55 +417,45 @@
             });
         };
 
-        // Add event listeners to each cloud and hover box
+        // Function to toggle the hover box visibility
+        const toggleHoverBox = (path, box, texts, group, hideAllFunction, setSelectedCloud) => {
+            const isSelected = path.classList.contains('selected'); // Check if the cloud is currently selected
+            hideAllFunction(); // Hide all hover boxes in the group first
+            if (!isSelected) { // If the cloud is not already selected
+                box.style.display = 'block'; // Show the hover box
+                path.classList.add('selected'); // Add the selected class to the cloud
+                texts.forEach(text => text.classList.add(group === 'Z3' ? 'text-blue' : 'text-red')); // Change text color
+
+                setTimeout(() => { // Set a timeout to adjust the hover box position
+                    const middleX = hoverBoxContainer.clientWidth / 2 - box.offsetWidth / 2; // Calculate horizontal center
+                    const middleY = hoverBoxContainer.clientHeight / 2 - box.offsetHeight / 2; // Calculate vertical center
+
+                    box.style.left = `${middleX}px`; // Set the left position of the hover box
+                    box.style.top = `${middleY}px`; // Set the top position of the hover box
+                }, 10);
+
+                setSelectedCloud(path); // Set the selected cloud to the current cloud
+            } else {
+                setSelectedCloud(null); // If the cloud is already selected, deselect it
+            }
+        };
+
+        // Add event listeners to each cloud and its texts
         hoverPaths.forEach(({ path, box, texts }, index) => {
-            // Function to toggle the hover box visibility
-            const toggleHoverBox = (event) => {
-                const isSelected = path.classList.contains('selected'); // Check if the cloud is currently selected
-                if (index < 6) { // Z3 group
-                    hideAllZ3HoverBoxes(); // Hide all Z3 hover boxes first
-                    if (!isSelected) { // If the cloud is not already selected
-                        box.style.display = 'block'; // Show the hover box
-                        path.classList.add('selected'); // Add the selected class to the cloud
-                        texts.forEach(text => text.classList.add('text-blue')); // Change text color to blue
-
-                        setTimeout(() => { // Set a timeout to adjust the hover box position
-                            const middleX = hoverBoxContainer.clientWidth / 2 - box.offsetWidth / 2; // Calculate horizontal center
-                            const middleY = hoverBoxContainer.clientHeight / 2 - box.offsetHeight / 2; // Calculate vertical center
-
-                            box.style.left = `${middleX}px`; // Set the left position of the hover box
-                            box.style.top = `${middleY}px`; // Set the top position of the hover box
-                        }, 10);
-
-                        selectedZ3Cloud = path; // Set the selected cloud to the current Z3 cloud
-                    } else {
-                        selectedZ3Cloud = null; // If the cloud is already selected, deselect it
-                    }
-                } else { // D7 group
-                    hideAllD7HoverBoxes(); // Hide all D7 hover boxes first
-                    if (!isSelected) { // If the cloud is not already selected
-                        box.style.display = 'block'; // Show the hover box
-                        path.classList.add('selected'); // Add the selected class to the cloud
-                        texts.forEach(text => text.classList.add('text-red')); // Change text color to red
-
-                        setTimeout(() => { // Set a timeout to adjust the hover box position
-                            const middleX = hoverBoxContainer.clientWidth / 2 - box.offsetWidth / 2; // Calculate horizontal center
-                            const middleY = hoverBoxContainer.clientHeight / 2 - box.offsetHeight / 2; // Calculate vertical center
-
-                            box.style.left = `${middleX}px`; // Set the left position of the hover box
-                            box.style.top = `${middleY}px`; // Set the top position of the hover box
-                        }, 10);
-
-                        selectedD7Cloud = path; // Set the selected cloud to the current D7 cloud
-                    } else {
-                        selectedD7Cloud = null; // If the cloud is already selected, deselect it
-                    }
-                }
-            };
+            const group = index < 6 ? 'Z3' : 'D7';
+            const hideAllFunction = group === 'Z3' ? hideAllZ3HoverBoxes : hideAllD7HoverBoxes;
+            const setSelectedCloud = group === 'Z3' ? (cloud) => selectedZ3Cloud = cloud : (cloud) => selectedD7Cloud = cloud;
 
             path.addEventListener('click', (event) => { // Add click event listener to the cloud
                 event.stopPropagation(); // Prevent the click from propagating to the document
-                toggleHoverBox(event); // Toggle the hover box visibility
+                toggleHoverBox(path, box, texts, group, hideAllFunction, setSelectedCloud); // Toggle the hover box visibility
+            });
+
+            texts.forEach(text => { // Add click event listener to each text element
+                text.addEventListener('click', (event) => {
+                    event.stopPropagation(); // Prevent the click from propagating to the document
+                    toggleHoverBox(path, box, texts, group, hideAllFunction, setSelectedCloud); // Toggle the hover box visibility
+                });
             });
 
             box.addEventListener('click', (event) => { // Add click event listener to the hover box
@@ -482,6 +472,7 @@
             }
         });
     </script>
+
     <script>
         function adjustFontSize(hoverBox) {
             const parentWidth = hoverBox.parentElement.clientWidth;
